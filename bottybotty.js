@@ -3,13 +3,14 @@ import fetch from 'cross-fetch';
 import { Wallet } from '@project-serum/anchor';
 import bs58 from 'bs58';
 import "dotenv/config.js";
-import {buyFunc} from './jupiter-api-example.js'
+import {buyFunc, sellFunc} from './jupiter-api-example.js'
+import { token } from '@project-serum/anchor/dist/cjs/utils/index.js';
 
 const connection = new Connection('https://prettiest-powerful-knowledge.solana-mainnet.quiknode.pro/f9838ad5bfc749855517220411e502d617e721a5/');
 
 const wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY || '')));
 
-
+const toke = 'Fch1oixTPri8zxBnmdCEADoJW2toyFHxqDZacQkwdvSP'
 function EMACalc(mArray,mRange) {
     let k = 2/(mRange + 1);
     // first item is just the same as the first item in the input
@@ -49,11 +50,11 @@ function SMACalc (mArray,mRange) {
 const options = {method: 'GET'};
 
 
-async function cryptic() {
-    const response = await fetch("https://price.jup.ag/v4/price?ids=3psH1Mj1f7yUfaD5gh6Zj7epE8hhrMkMETgv5TshQA4o");
+async function cryptic(tokenAddress) {
+    const response = await fetch("https://price.jup.ag/v4/price?ids="+tokenAddress+"");
     const movies = await response.json();
     //console.log(movies.data)
-    const tokprice = movies.data['3psH1Mj1f7yUfaD5gh6Zj7epE8hhrMkMETgv5TshQA4o'].price
+    const tokprice = movies.data[tokenAddress].price
     console.log('\n','\n','\n', "CURRENT PRICE:  ", tokprice);
     console.log(new Date().toLocaleTimeString())
     
@@ -76,16 +77,17 @@ async function cryptic() {
     console.log("Our SMA", SMA)
     if (EMA>SMA && prevEMA<prevSMA) {
         console.log('\n',"BUY!!!")
-        buyFunc()
+        buyFunc(tokenAddress)
     }
     if (EMA<SMA && prevEMA>prevSMA) {
         console.log('\n',"SELL!!!")
+        sellFunc(tokenAddress)
     }
   }
 
 function callitback() {
     //console.log('\n','HERE WE GO')
-    cryptic()
+    cryptic(toke)
     
     }
 
