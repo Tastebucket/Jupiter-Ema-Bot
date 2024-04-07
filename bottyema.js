@@ -11,30 +11,30 @@ const connection = new Connection('https://prettiest-powerful-knowledge.solana-m
 const wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY || '')));
 
 const toke = 'Fch1oixTPri8zxBnmdCEADoJW2toyFHxqDZacQkwdvSP'
-function EMACalc(mArray,mRange) {
-    let k = 2/(mRange + 1);
-    // first item is just the same as the first item in the input
-    let emaArray
-    emaArray = [mArray[0]];
-    // for the rest of the items, they are computed with the previous one
-    for (let i = 1; i < mArray.length; i++) {
-      emaArray.push(mArray[i] * k + emaArray[i - 1] * (1 - k));
-    }
-    //console.log('this is ema array', emaArray);
-    return emaArray;
-  }
-function EMACalc2(estEma,mArray, mRange) {
-    let k = 2/(mRange + 1);
-    // first item is just the same as the first item in the input
-    let emaArray
-    emaArray = [estEma];
-    // for the rest of the items, they are computed with the previous one
-    for (let i = 1; i < mArray.length; i++) {
-        emaArray.push(mArray[i] * k + emaArray[i - 1] * (1 - k));
-    }
-    //console.log('this is our OTHER ema array', emaArray);
-    return emaArray;
-    }
+// function EMACalc(mArray,mRange) {
+//     let k = 2/(mRange + 1);
+//     // first item is just the same as the first item in the input
+//     let emaArray
+//     emaArray = [mArray[0]];
+//     // for the rest of the items, they are computed with the previous one
+//     for (let i = 1; i < mArray.length; i++) {
+//       emaArray.push(mArray[i] * k + emaArray[i - 1] * (1 - k));
+//     }
+//     //console.log('this is ema array', emaArray);
+//     return emaArray;
+//   }
+// function EMACalc2(estEma,mArray, mRange) {
+//     let k = 2/(mRange + 1);
+//     // first item is just the same as the first item in the input
+//     let emaArray
+//     emaArray = [estEma];
+//     // for the rest of the items, they are computed with the previous one
+//     for (let i = 1; i < mArray.length; i++) {
+//         emaArray.push(mArray[i] * k + emaArray[i - 1] * (1 - k));
+//     }
+//     //console.log('this is our OTHER ema array', emaArray);
+//     return emaArray;
+//     }
 function EMACalc3(previEMA, price, mRange) {
     let k = 2/(mRange + 1);
     // first item is just the same as the first item in the input
@@ -46,7 +46,7 @@ let nums = []
 let smaArray = []
 let EMA
 let EMA3
-let EMAOther
+let emaArray =[]
 let SMA
 let prevEMA
 let prevEMA2 = 0.012
@@ -69,13 +69,14 @@ const smaSpan = 10
 //     return smaArray
 //     }
 
-function SMACalc (mArray,mRange) {
-    let workbook = mArray
+function SMACalc (mArray,mRange,price) {
+    let workbook = mArray.concat(price)
     let workbook2 = workbook
+    console.log('Here is the first workbook', workbook2)
     if (workbook.length>mRange) {
         //console.log('BOOP')
         workbook=workbook.slice(workbook.length-(mRange+1), workbook.length-1);
-        workbook2= workbook
+        workbook2 = workbook
         }
     if (workbook.length<mRange) {
         const diff = mRange-workbook.length
@@ -101,6 +102,7 @@ const options = {method: 'GET'};
 
 
 async function cryptic(tokenAddress) {
+    console.log("DINGALING")
     const response = await fetch("https://price.jup.ag/v4/price?ids="+tokenAddress+"");
     const movies = await response.json();
     //console.log(movies.data)
@@ -108,13 +110,9 @@ async function cryptic(tokenAddress) {
     console.log('\n','\n','\n', "CURRENT PRICE:  ", tokprice);
     console.log(new Date().toLocaleTimeString())
     
-    nums.push(tokprice)
     //console.log('here is nums array', nums)
     if (EMA) {
         prevEMA=EMA
-    }
-    if (EMA3) {
-        prevEMA2=EMA3
     }
     if (SMA) {
         prevSMA=SMA
@@ -126,28 +124,51 @@ async function cryptic(tokenAddress) {
     //EMA = EMAarray[EMAarray.length-1]
     //EMAOther = EMA2array[EMA2array.length-1]
     //console.log('This is the ema', EMA)
-    let SMAarray = SMACalc(nums, smaSpan)
+    let SMAarray = SMACalc(nums, smaSpan, tokprice)
     SMA = SMAarray[SMAarray.length-1]
     console.log("Our previous EMA", prevEMA)
     console.log("Our new EMA", EMA)
-    //console.log("Our OTHER EMA", EMAOther)
-    //console.log("Our OTHER OTHER OTHER EMA", EMA3)
     console.log("Our previous SMA", prevSMA)
     console.log("Our SMA", SMA)
+    console.log("This is ema array",emaArray)
     if (EMA>SMA && prevEMA<prevSMA) {
         console.log('\n',"BUY!!!")
-        buyFunc(tokenAddress)
+        // buyFunc(tokenAddress)
     }
     if (EMA<SMA && prevEMA>prevSMA) {
         console.log('\n',"SELL!!!")
-        sellFunc(tokenAddress)
+        // sellFunc(tokenAddress)
     }
   }
+async function cryptic2(tokenAddress) {
+    const response = await fetch("https://price.jup.ag/v4/price?ids="+tokenAddress+"");
+    const movies = await response.json();
+    //console.log(movies.data)
+    const tokprice = movies.data[tokenAddress].price
+    console.log('\n','\n','\n', "LONG CURRENT PRICE:  ", tokprice);
+    console.log(new Date().toLocaleTimeString())
+    //calculate EMA
+    EMA3 = EMACalc3(prevEMA2, tokprice, emaSpan)
+    //Set previous candle EMA
+    prevEMA2 = EMA3
+    EMA = EMA3
+    emaArray.push(EMA)
+    console.log("This is ema array",emaArray)
+    //push price for SMA
+    nums.push(tokprice)
+}
 
-function callitback() {
+cryptic2(toke)
+
+function callitbackshort() {
     //console.log('\n','HERE WE GO')
     cryptic(toke)
     
     }
-
-const intervalID = setInterval(callitback, 6000)
+function callitbacklong() {
+    //console.log('\n','HERE WE GO')
+    cryptic2(toke)
+    
+    }
+const intervalID = setInterval(callitbackshort, 10000)
+const interval2ID = setInterval(callitbacklong, 30000)
