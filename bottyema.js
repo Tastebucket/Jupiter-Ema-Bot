@@ -9,32 +9,9 @@ import { token } from '@project-serum/anchor/dist/cjs/utils/index.js';
 const connection = new Connection('https://prettiest-powerful-knowledge.solana-mainnet.quiknode.pro/f9838ad5bfc749855517220411e502d617e721a5/');
 
 const wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY || '')));
-
+// Address for token you want to trade
 const toke = 'Fch1oixTPri8zxBnmdCEADoJW2toyFHxqDZacQkwdvSP'
-// function EMACalc(mArray,mRange) {
-//     let k = 2/(mRange + 1);
-//     // first item is just the same as the first item in the input
-//     let emaArray
-//     emaArray = [mArray[0]];
-//     // for the rest of the items, they are computed with the previous one
-//     for (let i = 1; i < mArray.length; i++) {
-//       emaArray.push(mArray[i] * k + emaArray[i - 1] * (1 - k));
-//     }
-//     //console.log('this is ema array', emaArray);
-//     return emaArray;
-//   }
-// function EMACalc2(estEma,mArray, mRange) {
-//     let k = 2/(mRange + 1);
-//     // first item is just the same as the first item in the input
-//     let emaArray
-//     emaArray = [estEma];
-//     // for the rest of the items, they are computed with the previous one
-//     for (let i = 1; i < mArray.length; i++) {
-//         emaArray.push(mArray[i] * k + emaArray[i - 1] * (1 - k));
-//     }
-//     //console.log('this is our OTHER ema array', emaArray);
-//     return emaArray;
-//     }
+
 function EMACalc3(previEMA, price, mRange) {
     let k = 2/(mRange + 1);
     // first item is just the same as the first item in the input
@@ -49,11 +26,20 @@ let EMA3
 let emaArray =[]
 let SMA
 let prevEMA
+//Enter your EMA estimate
 let prevEMA2 = 0.012
 let prevSMA
+//Enter your EMA SPAN
 const emaSpan = 8
+//Enter your SMA span
 const smaSpan = 10
-
+//Enter the frequency to check (minutes)
+const chekfreq = .25
+//Enter length of interval (minutes)
+const intLength = 15
+//Enter Quantity of token to buy (USD)
+const amount = .1
+const amountConverted = amount*1000000
 
 // function SMACalc (mArray,mRange) {
 //     if (mArray.length>mRange) {
@@ -102,28 +88,19 @@ const options = {method: 'GET'};
 
 
 async function cryptic(tokenAddress) {
-    console.log("DINGALING")
     const response = await fetch("https://price.jup.ag/v4/price?ids="+tokenAddress+"");
-    const movies = await response.json();
-    //console.log(movies.data)
-    const tokprice = movies.data[tokenAddress].price
+    const jsonResp = await response.json();
+    const tokprice = jsonResp.data[tokenAddress].price
     console.log('\n','\n','\n', "CURRENT PRICE:  ", tokprice);
     console.log(new Date().toLocaleTimeString())
-    
-    //console.log('here is nums array', nums)
     if (EMA) {
         prevEMA=EMA
     }
     if (SMA) {
         prevSMA=SMA
     }
-    //let EMAarray = EMACalc(nums, emaSpan)
-    //let EMA2array = EMACalc2 (.024, nums, emaSpan)
     EMA3 = EMACalc3(prevEMA2, tokprice, emaSpan)
     EMA = EMA3
-    //EMA = EMAarray[EMAarray.length-1]
-    //EMAOther = EMA2array[EMA2array.length-1]
-    //console.log('This is the ema', EMA)
     let SMAarray = SMACalc(nums, smaSpan, tokprice)
     SMA = SMAarray[SMAarray.length-1]
     console.log("Our previous EMA", prevEMA)
@@ -133,18 +110,17 @@ async function cryptic(tokenAddress) {
     console.log("This is ema array",emaArray)
     if (EMA>SMA && prevEMA<prevSMA) {
         console.log('\n',"BUY!!!")
-        // buyFunc(tokenAddress)
+        buyFunc(tokenAddress, amountConverted)
     }
     if (EMA<SMA && prevEMA>prevSMA) {
         console.log('\n',"SELL!!!")
-        // sellFunc(tokenAddress)
+        sellFunc(tokenAddress)
     }
   }
 async function cryptic2(tokenAddress) {
     const response = await fetch("https://price.jup.ag/v4/price?ids="+tokenAddress+"");
-    const movies = await response.json();
-    //console.log(movies.data)
-    const tokprice = movies.data[tokenAddress].price
+    const jsonResp = await response.json();
+    const tokprice = jsonResp.data[tokenAddress].price
     console.log('\n','\n','\n', "LONG CURRENT PRICE:  ", tokprice);
     console.log(new Date().toLocaleTimeString())
     //calculate EMA
@@ -170,5 +146,5 @@ function callitbacklong() {
     cryptic2(toke)
     
     }
-const intervalID = setInterval(callitbackshort, 10000)
-const interval2ID = setInterval(callitbacklong, 30000)
+const intervalID = setInterval(callitbackshort, (chekfreq*60000))
+const interval2ID = setInterval(callitbacklong, (intLength*60000))

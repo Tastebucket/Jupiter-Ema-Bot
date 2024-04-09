@@ -11,10 +11,10 @@ const connection = new Connection('https://prettiest-powerful-knowledge.solana-m
 const wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY || '')));
 
 // Swapping SOL to USDC with input 0.1 SOL and 0.5% slippage
-export async function buyFunc (tokenAddress) {
+export async function buyFunc (tokenAddress, amount) {
 
   const quoteResponse = await (
-      await fetch('https://quote-api.jup.ag/v6/quote?inputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\&outputMint='+tokenAddress+'\&amount=100000\&slippageBps=100')
+      await fetch('https://quote-api.jup.ag/v6/quote?inputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\&outputMint='+tokenAddress+'\&amount='+amount+'\&slippageBps=100')
     ).json();
     console.log({ quoteResponse })
 
