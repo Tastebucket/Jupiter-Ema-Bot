@@ -12,89 +12,20 @@ const wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_
 
 // Swapping SOL to USDC with input 0.1 SOL and 0.5% slippage
 export async function buyFunc (tokenAddress, amount) {
-
-  const quoteResponse = await (
-      await fetch('https://quote-api.jup.ag/v6/quote?inputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\&outputMint='+tokenAddress+'\&amount='+amount+'\&slippageBps=100')
-    ).json();
-    console.log({ quoteResponse })
-
-  // get serialized transactions for the swap
-  const { swapTransaction } = await (
-      await fetch('https://quote-api.jup.ag/v6/swap', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          // quoteResponse from /quote api
-          quoteResponse,
-          // user public key to be used for the swap
-          userPublicKey: wallet.publicKey.toString(),
-          // auto wrap and unwrap SOL. default is true
-          wrapAndUnwrapSol: true,
-          // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
-          // feeAccount: "fee_account_public_key"
-          prioritizationFeeLamports: 'auto',
-          dynamicComputeUnitLimit: true,
-        })
-      })
-    ).json();
-
-  // deserialize the transaction
-  const swapTransactionBuf = Buffer.from(swapTransaction, 'base64');
-  var transaction = VersionedTransaction.deserialize(swapTransactionBuf);
-  //console.log(transaction);
-
-  transaction.sign([wallet.payer]);
-
-  // // Execute the transaction
-  // const rawTransaction = transaction.serialize()
-  // const txid = await connection.sendRawTransaction(rawTransaction, {
-  //   skipPreflight: true,
-  //   maxRetries: 5
-  // });
-  // await connection.confirmTransaction(txid);
-  // console.log(`https://solscan.io/tx/${txid}`);
-  var tryAgain=true;
-  var objSignatureStatusResult;
-  var maxTriesCounter=0; 
-  var maxTries=10; 
-
-  while (tryAgain) {
-    maxTriesCounter++;
-    const rawTransaction = transaction.serialize()
-    const txid = await connection.sendRawTransaction(rawTransaction, {
-      skipPreflight: true,
-      maxRetries: 2
-    });
-
-    console.log(`https://solscan.io/tx/${txid}`);
-    await new Promise(r => setTimeout(r, 1500));
-
-    const result = await connection.getSignatureStatus(txid, {
-      searchTransactionHistory: true,
-      });
-    objSignatureStatusResult = JSON.parse(JSON.stringify(result));
-    if ( objSignatureStatusResult.value !== null) tryAgain=false;
-    if (maxTriesCounter>maxTries) tryAgain=false;
-    console.log(result)
-  }
-}
-
-export async function sellFunc (tokenAddress) {
+  if (!amount) {
     const mintAccount = new web3.PublicKey(
-      tokenAddress
+      'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
     );
     const bally = await connection.getParsedTokenAccountsByOwner(wallet.publicKey, {
       mint: mintAccount,
     })
-    const sellAmount = bally.value[0].account.data.parsed.info.tokenAmount.amount
-    console.log(bally.value[0].account.data.parsed.info.tokenAmount.amount)
-  
+    amount = bally.value[0].account.data.parsed.info.tokenAmount.amount
+  }
+  if (amount){
     const quoteResponse = await (
-      await fetch('https://quote-api.jup.ag/v6/quote?inputMint='+tokenAddress+'\&outputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\&amount='+sellAmount+'\&slippageBps=100')
-    ).json();
-    console.log({ quoteResponse })
+        await fetch('https://quote-api.jup.ag/v6/quote?inputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\&outputMint='+tokenAddress+'\&amount='+amount+'\&slippageBps=100')
+      ).json();
+      console.log({ quoteResponse })
 
     // get serialized transactions for the swap
     const { swapTransaction } = await (
@@ -125,14 +56,6 @@ export async function sellFunc (tokenAddress) {
 
     transaction.sign([wallet.payer]);
 
-    // // Execute the transaction
-    // const rawTransaction = transaction.serialize()
-    // const txid = await connection.sendRawTransaction(rawTransaction, {
-    //   skipPreflight: true,
-    //   maxRetries: 5
-    // });
-    // await connection.confirmTransaction(txid);
-    // console.log(`https://solscan.io/tx/${txid}`);
     var tryAgain=true;
     var objSignatureStatusResult;
     var maxTriesCounter=0; 
@@ -156,6 +79,87 @@ export async function sellFunc (tokenAddress) {
       if ( objSignatureStatusResult.value !== null) tryAgain=false;
       if (maxTriesCounter>maxTries) tryAgain=false;
       console.log(result)
+    }
+  }
+}
+
+export async function sellFunc (tokenAddress) {
+    const mintAccount = new web3.PublicKey(
+      tokenAddress
+    );
+    const bally = await connection.getParsedTokenAccountsByOwner(wallet.publicKey, {
+      mint: mintAccount,
+    })
+    if (bally.value[0]) {
+    const sellAmount = bally.value[0].account.data.parsed.info.tokenAmount.amount
+    console.log(bally.value[0].account.data.parsed.info.tokenAmount.amount)
+    
+      const quoteResponse = await (
+        await fetch('https://quote-api.jup.ag/v6/quote?inputMint='+tokenAddress+'\&outputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\&amount='+sellAmount+'\&slippageBps=100')
+      ).json();
+      console.log({ quoteResponse })
+
+      // get serialized transactions for the swap
+      const { swapTransaction } = await (
+          await fetch('https://quote-api.jup.ag/v6/swap', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              // quoteResponse from /quote api
+              quoteResponse,
+              // user public key to be used for the swap
+              userPublicKey: wallet.publicKey.toString(),
+              // auto wrap and unwrap SOL. default is true
+              wrapAndUnwrapSol: true,
+              // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
+              // feeAccount: "fee_account_public_key"
+              prioritizationFeeLamports: 'auto',
+              dynamicComputeUnitLimit: true,
+            })
+          })
+        ).json();
+
+      // deserialize the transaction
+      const swapTransactionBuf = Buffer.from(swapTransaction, 'base64');
+      var transaction = VersionedTransaction.deserialize(swapTransactionBuf);
+      //console.log(transaction);
+
+      transaction.sign([wallet.payer]);
+
+      // // Execute the transaction
+      // const rawTransaction = transaction.serialize()
+      // const txid = await connection.sendRawTransaction(rawTransaction, {
+      //   skipPreflight: true,
+      //   maxRetries: 5
+      // });
+      // await connection.confirmTransaction(txid);
+      // console.log(`https://solscan.io/tx/${txid}`);
+      var tryAgain=true;
+      var objSignatureStatusResult;
+      var maxTriesCounter=0; 
+      var maxTries=10; 
+
+      while (tryAgain) {
+        maxTriesCounter++;
+        const rawTransaction = transaction.serialize()
+        const txid = await connection.sendRawTransaction(rawTransaction, {
+          skipPreflight: true,
+          maxRetries: 2
+        });
+
+        console.log(`https://solscan.io/tx/${txid}`);
+        await new Promise(r => setTimeout(r, 1500));
+
+        const result = await connection.getSignatureStatus(txid, {
+          searchTransactionHistory: true,
+          });
+        objSignatureStatusResult = JSON.parse(JSON.stringify(result));
+        if ( objSignatureStatusResult.value !== null) tryAgain=false;
+        if (maxTriesCounter>maxTries) tryAgain=false;
+        console.log(result)
+      }
     }
 }
 import web3 from "@solana/web3.js";
@@ -184,7 +188,17 @@ import web3 from "@solana/web3.js";
   
 //   console.log(bally.value[0].account.data.parsed.info.tokenAmount.amount)
 
-// const ball = await connection.getBalance(bally.value.pubKey)
+// const mintAccount = new web3.PublicKey(
+//   '3psH1Mj1f7yUfaD5gh6Zj7epE8hhrMkMETgv5TshQA4o'
+// );
+// const bally = await connection.getParsedTokenAccountsByOwner(wallet.publicKey, {
+//   mint: mintAccount,
+// })
+// console.log(bally.value[0])
 
-// console.log(ball)
-
+// export async function buyFunc2 (tokenAddress, amount) {
+//   const quoteResponse = await (
+//     await fetch('https://quote-api.jup.ag/v6/quote?inputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\&outputMint='+tokenAddress+'\&amount='+amount+'\&slippageBps=100')
+//   ).json();
+//   console.log({ quoteResponse })
+// }

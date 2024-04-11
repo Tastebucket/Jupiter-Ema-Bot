@@ -7,13 +7,13 @@ import promptSync from 'prompt-sync';
 import {buyFunc, sellFunc} from './jupiter-api-example.js';
 import { token } from '@project-serum/anchor/dist/cjs/utils/index.js';
 
+const prompt = promptSync();
 const connection = new Connection('https://prettiest-powerful-knowledge.solana-mainnet.quiknode.pro/f9838ad5bfc749855517220411e502d617e721a5/');
 //ENTER YOUR WALLET PRIVATE KEY IN ENV FILE
 const wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY || '')));
 // Address for token you want to trade
 const toke = prompt('ENTER TOKEN ADDRESS:  ')
 
-const prompt = promptSync();
 let nums = []
 let smaArray = []
 let EMA
@@ -41,7 +41,8 @@ chekfreq = Number(chekfreq)
 let intLength = prompt('Enter length of interval (minutes):  ')
 intLength = Number(intLength)
 //Enter Quantity of token to buy (USD)
-let amount = prompt('Enter Quantity of token to buy (USD):  ')
+
+let amount = prompt('Enter Quantity of token to buy (USD). If you would like to use entire balance press ENTER:  ')
 amount = Number(amount)
 const amountConverted = amount*1000000
 
@@ -153,7 +154,8 @@ async function cryptic2(tokenAddress) {
 }
 
 nums.push(estSMA)
-console.log(nums)
+console.log(amountConverted)
+sellFunc(toke)
 cryptic2(toke)
 
 function callitbackshort() {
