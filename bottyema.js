@@ -3,22 +3,17 @@ import fetch from 'cross-fetch';
 import { Wallet } from '@project-serum/anchor';
 import bs58 from 'bs58';
 import "dotenv/config.js";
-import {buyFunc, sellFunc} from './jupiter-api-example.js'
+import promptSync from 'prompt-sync';
+import {buyFunc, sellFunc} from './jupiter-api-example.js';
 import { token } from '@project-serum/anchor/dist/cjs/utils/index.js';
 
 const connection = new Connection('https://prettiest-powerful-knowledge.solana-mainnet.quiknode.pro/f9838ad5bfc749855517220411e502d617e721a5/');
-
+//ENTER YOUR WALLET PRIVATE KEY IN ENV FILE
 const wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY || '')));
 // Address for token you want to trade
-const toke = 'Fch1oixTPri8zxBnmdCEADoJW2toyFHxqDZacQkwdvSP'
+const toke = prompt('ENTER TOKEN ADDRESS:  ')
 
-function EMACalc3(previEMA, price, mRange) {
-    let k = 2/(mRange + 1);
-    // first item is just the same as the first item in the input
-    const ema = price * k + previEMA * (1 - k);
-    //console.log('this is our OTHER ema array', emaArray);
-    return ema;
-    }
+const prompt = promptSync();
 let nums = []
 let smaArray = []
 let EMA
@@ -27,19 +22,41 @@ let emaArray =[]
 let SMA
 let prevEMA
 //Enter your EMA estimate
-let prevEMA2 = 0.012
+let prevEMA2 = prompt('Enter your EMA estimate:  ')
+prevEMA2 = Number(prevEMA2)
 let prevSMA
+//Enter your SMA estimate
+let estSMA = prompt('Enter your SMA estimate:  ')
+estSMA = Number(estSMA)
 //Enter your EMA SPAN
-const emaSpan = 8
+let emaSpan = prompt('Enter your EMA SPAN:  ')
+emaSpan = Number(emaSpan)
 //Enter your SMA span
-const smaSpan = 10
+let smaSpan = prompt('Enter your SMA SPAN:  ')
+smaSpan= Number(smaSpan)
 //Enter the frequency to check (minutes)
-const chekfreq = .25
+let chekfreq = prompt('Enter the frequency to check (minutes):  ')
+chekfreq = Number(chekfreq)
 //Enter length of interval (minutes)
-const intLength = 15
+let intLength = prompt('Enter length of interval (minutes):  ')
+intLength = Number(intLength)
 //Enter Quantity of token to buy (USD)
-const amount = .1
+let amount = prompt('Enter Quantity of token to buy (USD):  ')
+amount = Number(amount)
 const amountConverted = amount*1000000
+
+
+
+function EMACalc3(previEMA, price, mRange) {
+    let k = 2/(mRange + 1);
+    // console.log('THIS IS MRANGE', mRange)
+    // console.log('THIS IS K', k)
+    // first item is just the same as the first item in the input
+    const ema = price * k + previEMA * (1 - k);
+    // console.log('CALCULATE', ema)
+    //console.log('this is our OTHER ema array', emaArray);
+    return ema;
+    }
 
 // function SMACalc (mArray,mRange) {
 //     if (mArray.length>mRange) {
@@ -71,12 +88,11 @@ function SMACalc (mArray,mRange,price) {
             workbook2 = [workbook[0]].concat(workbook2)
             //console.log('ding', i)
         }
-    } else {
-        workbook2=workbook
     }
     console.log('This is the workbook', workbook2)
     //console.log('here is new sma nums', mArray)
     let sum = workbook2.reduce((pv, cv) => pv + cv, 0);
+    console.log('Here is the sum', sum)
     let sma = sum/workbook2.length
     smaArray.push(sma)
     //console.log('this is sma', sma)
@@ -102,6 +118,7 @@ async function cryptic(tokenAddress) {
     EMA3 = EMACalc3(prevEMA2, tokprice, emaSpan)
     EMA = EMA3
     let SMAarray = SMACalc(nums, smaSpan, tokprice)
+    console.log('SMA array', SMAarray)
     SMA = SMAarray[SMAarray.length-1]
     console.log("Our previous EMA", prevEMA)
     console.log("Our new EMA", EMA)
@@ -126,6 +143,7 @@ async function cryptic2(tokenAddress) {
     //calculate EMA
     EMA3 = EMACalc3(prevEMA2, tokprice, emaSpan)
     //Set previous candle EMA
+    console.log('here is prevEMA2', prevEMA2)
     prevEMA2 = EMA3
     EMA = EMA3
     emaArray.push(EMA)
@@ -134,6 +152,8 @@ async function cryptic2(tokenAddress) {
     nums.push(tokprice)
 }
 
+nums.push(estSMA)
+console.log(nums)
 cryptic2(toke)
 
 function callitbackshort() {
