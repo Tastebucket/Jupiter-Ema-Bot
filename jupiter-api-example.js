@@ -8,10 +8,10 @@ import "dotenv/config.js";
 // // This RPC endpoint is only for demonstration purposes so that this example will run.
 const connection = new Connection('https://prettiest-powerful-knowledge.solana-mainnet.quiknode.pro/f9838ad5bfc749855517220411e502d617e721a5/');
 
-const wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY || '')));
+
 
 // Swapping SOL to USDC with input 0.1 SOL and 0.5% slippage
-export async function buyFunc (tokenAddress, amount) {
+export async function buyFunc (tokenAddress, amount, wallet) {
   if (!amount) {
     const mintAccount = new web3.PublicKey(
       'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v'
@@ -83,7 +83,7 @@ export async function buyFunc (tokenAddress, amount) {
   }
 }
 
-export async function sellFunc (tokenAddress) {
+export async function sellFunc (tokenAddress, wallet) {
     const mintAccount = new web3.PublicKey(
       tokenAddress
     );

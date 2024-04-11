@@ -8,9 +8,10 @@ import {buyFunc, sellFunc} from './jupiter-api-example.js';
 import { token } from '@project-serum/anchor/dist/cjs/utils/index.js';
 
 const prompt = promptSync();
+const PRIVATE_KEY = prompt('Enter Wallet Private Key:  ')
 const connection = new Connection('https://prettiest-powerful-knowledge.solana-mainnet.quiknode.pro/f9838ad5bfc749855517220411e502d617e721a5/');
 //ENTER YOUR WALLET PRIVATE KEY IN ENV FILE
-const wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY || '')));
+const wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(PRIVATE_KEY || '')));
 // Address for token you want to trade
 const toke = prompt('ENTER TOKEN ADDRESS:  ')
 
@@ -128,11 +129,11 @@ async function cryptic(tokenAddress) {
     console.log("This is ema array",emaArray)
     if (EMA>SMA && prevEMA<prevSMA) {
         console.log('\n',"BUY!!!")
-        buyFunc(tokenAddress, amountConverted)
+        buyFunc(tokenAddress, amountConverted, wallet)
     }
     if (EMA<SMA && prevEMA>prevSMA) {
         console.log('\n',"SELL!!!")
-        sellFunc(tokenAddress)
+        sellFunc(tokenAddress, wallet)
     }
   }
 async function cryptic2(tokenAddress) {
@@ -155,7 +156,6 @@ async function cryptic2(tokenAddress) {
 
 nums.push(estSMA)
 console.log(amountConverted)
-sellFunc(toke)
 cryptic2(toke)
 
 function callitbackshort() {
