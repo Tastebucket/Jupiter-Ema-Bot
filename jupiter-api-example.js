@@ -40,8 +40,6 @@ export async function buyFunc (tokenAddress, amount, wallet) {
             userPublicKey: wallet.publicKey.toString(),
             // auto wrap and unwrap SOL. default is true
             wrapAndUnwrapSol: true,
-            // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
-            // feeAccount: "fee_account_public_key"
             prioritizationFeeLamports: 'auto',
             dynamicComputeUnitLimit: true,
           })
@@ -112,8 +110,6 @@ export async function sellFunc (tokenAddress, wallet) {
               userPublicKey: wallet.publicKey.toString(),
               // auto wrap and unwrap SOL. default is true
               wrapAndUnwrapSol: true,
-              // feeAccount is optional. Use if you want to charge a fee.  feeBps must have been passed in /quote API.
-              // feeAccount: "fee_account_public_key"
               prioritizationFeeLamports: 'auto',
               dynamicComputeUnitLimit: true,
             })
@@ -162,42 +158,3 @@ export async function sellFunc (tokenAddress, wallet) {
     }
 }
 import web3 from "@solana/web3.js";
-// (async () => {
-//   const solana = new web3.Connection("https://prettiest-powerful-knowledge.solana-mainnet.quiknode.pro/f9838ad5bfc749855517220411e502d617e721a5/");
-//   const trans = 
-//     await solana.getTransaction(
-//       "2ejihaFPm7mmtRGm1waWB1KdwPVVQokPSACUjrnHMf1vLKFRbvHhMeEHDtHkWgDAyYHaj4NHWZdRdkFy4ShdRKk4",
-//       { maxSupportedTransactionVersion: 0 }
-//   );
-//   trans.meta.preTokenBalances.forEach(element => {
-//     if (element.owner==wallet.publicKey.toString() && element.mint==
-//   });
-//   console.log("PRETOKEN", '\n',trans.meta.preTokenBalances)
-//   console.log("POSTOKEN", '\n',trans.meta.postTokenBalances)
-// })();
-
-
-
-// const mintAccount = new web3.PublicKey(
-//   'Fch1oixTPri8zxBnmdCEADoJW2toyFHxqDZacQkwdvSP'
-// );
-// const bally = await connection.getParsedTokenAccountsByOwner(wallet.publicKey, {
-//     mint: mintAccount,
-//   })
-  
-//   console.log(bally.value[0].account.data.parsed.info.tokenAmount.amount)
-
-// const mintAccount = new web3.PublicKey(
-//   '3psH1Mj1f7yUfaD5gh6Zj7epE8hhrMkMETgv5TshQA4o'
-// );
-// const bally = await connection.getParsedTokenAccountsByOwner(wallet.publicKey, {
-//   mint: mintAccount,
-// })
-// console.log(bally.value[0])
-
-// export async function buyFunc2 (tokenAddress, amount) {
-//   const quoteResponse = await (
-//     await fetch('https://quote-api.jup.ag/v6/quote?inputMint=EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v\&outputMint='+tokenAddress+'\&amount='+amount+'\&slippageBps=100')
-//   ).json();
-//   console.log({ quoteResponse })
-// }
