@@ -10,7 +10,7 @@ import { token } from '@project-serum/anchor/dist/cjs/utils/index.js';
 const prompt = promptSync();
 const PRIVATE_KEY = prompt('Enter Wallet Private Key:  ')
 const connection = new Connection(process.env.RPC_ENDPOINT);
-//ENTER YOUR WALLET PRIVATE KEY IN ENV FILE
+
 const wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(PRIVATE_KEY || '')));
 // Address for token you want to trade
 const toke = prompt('ENTER TOKEN ADDRESS:  ')
