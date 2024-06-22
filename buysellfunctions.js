@@ -6,7 +6,7 @@ import "dotenv/config.js";
 
 // // It is recommended that you use your own RPC endpoint.
 // // This RPC endpoint is only for demonstration purposes so that this example will run.
-const connection = new Connection('https://prettiest-powerful-knowledge.solana-mainnet.quiknode.pro/f9838ad5bfc749855517220411e502d617e721a5/');
+const connection = new Connection(process.env.RPC_ENDPOINT);
 
 
 

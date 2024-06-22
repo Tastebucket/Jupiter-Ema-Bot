@@ -4,12 +4,12 @@ import { Wallet } from '@project-serum/anchor';
 import bs58 from 'bs58';
 import "dotenv/config.js";
 import promptSync from 'prompt-sync';
-import {buyFunc, sellFunc} from './jupiter-api-example.js';
+import {buyFunc, sellFunc} from './buysellfunctions.js';
 import { token } from '@project-serum/anchor/dist/cjs/utils/index.js';
 
 const prompt = promptSync();
 const PRIVATE_KEY = prompt('Enter Wallet Private Key:  ')
-const connection = new Connection('https://prettiest-powerful-knowledge.solana-mainnet.quiknode.pro/f9838ad5bfc749855517220411e502d617e721a5/');
+const connection = new Connection(process.env.RPC_ENDPOINT);
 //ENTER YOUR WALLET PRIVATE KEY IN ENV FILE
 const wallet = new Wallet(Keypair.fromSecretKey(bs58.decode(PRIVATE_KEY || '')));
 // Address for token you want to trade
